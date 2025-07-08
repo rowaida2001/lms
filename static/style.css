@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@600&display=swap');
+
+.login-bg {
+  background-image: url("/static/img/png.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  font-family: 'Cairo', sans-serif;
+  font-weight: bold;
+}
+
+.glass-card {
+  background-color: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(6px);
+  border-radius: 15px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: scale(1.01);
+}
+
+.logo-img {
+  max-width: 120px;
+  opacity: 0.9;
+  display: block;
+  border-radius: 10px;
+  position: relative;
+  margin: auto;
+}
+
+h4, label, .form-label, p, a {
+  font-family: 'Cairo', sans-serif;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.btn-warning {
+  background-color: #f39c12;
+  color: white;
+  font-weight: bold;
+  border: none;
+}
+
+.btn-success {
+  background-color: #27ae60;
+  color: white;
+  font-weight: bold;
+  border: none;
+}
+
+.logo-container {
+  position: relative;
+  display: inline-block;
+  padding: 8px;
+  border-radius: 15px;
+  background-color: rgba(255, 255, 255, 0.4);
+  overflow: hidden;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+  z-index: 1;
+}
+
+.shine-effect {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+}
+
+.shine-effect::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    transparent 100%
+  );
+  transform: skewX(-20deg);
+  animation: shine 2.5s ease-in-out infinite;
+  z-index: 2;
+  pointer-events: none;
+}
+
+@keyframes shine {
+  0% {
+    left: -75%;
+  }
+  100% {
+    left: 125%;
+  }
+}
