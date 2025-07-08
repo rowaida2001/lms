@@ -10,6 +10,34 @@ app.secret_key = "your_secret_key"
 UPLOAD_FOLDER = "static/user_photos"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+# ==========================
+# Database Setup Functions
+# ==========================
+def init_db():
+    conn = sqlite3.connect('database.db')
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    fullname TEXT,
+                    email TEXT UNIQUE,
+                    password TEXT,
+                    photo_path TEXT
+                )''')
+    c.execute('''CREATE TABLE IF NOT EXISTS courses (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER,
+                    name TEXT,
+                    description TEXT,
+                    FOREIGN KEY(user_id) REFERENCES users(id)
+                )''')
+    conn.commit()
+    conn.close()
+
+init_db()
+
+# ==========================
+# Helper Functions
+# ==========================
 def get_user_by_email(email):
     conn = sqlite3.connect('database.db')
     c = conn.cursor()
@@ -33,6 +61,33 @@ def insert_user(fullname, email, password, photo_path=None):
     finally:
         conn.close()
 
+def insert_course(user_id, course_name, course_description):
+    try:
+        conn = sqlite3.connect('database.db')
+        c = conn.cursor()
+        c.execute(
+            "INSERT INTO courses (user_id, name, description) VALUES (?, ?, ?)",
+            (user_id, course_name, course_description)
+        )
+        conn.commit()
+        return True
+    except Exception as e:
+        print("Error inserting course:", e)
+        return False
+    finally:
+        conn.close()
+
+def get_courses_by_user(user_id):
+    conn = sqlite3.connect('database.db')
+    c = conn.cursor()
+    c.execute("SELECT name, description FROM courses WHERE user_id = ?", (user_id,))
+    courses = c.fetchall()
+    conn.close()
+    return courses
+
+# ==========================
+# Routes
+# ==========================
 @app.route('/')
 def home():
     if 'email' in session:
@@ -51,11 +106,38 @@ def login():
 
     return render_template('login.html', error="Invalid credentials")
 
+@app.route('/logout')
+def logout():
+    session.pop('email', None)
+    return redirect(url_for('home'))
+
 @app.route('/dashboard')
 def dashboard():
     if 'email' not in session:
         return redirect(url_for('home'))
-    return render_template('dashboard.html')
+
+    user = get_user_by_email(session['email'])
+    user_id = user[0]  
+    courses = get_courses_by_user(user_id)
+
+    return render_template('dashboard.html', courses=[{'name': c[0], 'description': c[1]} for c in courses])
+
+@app.route('/create_course', methods=['GET', 'POST'])
+def create_course():
+    if 'email' not in session:
+        return redirect(url_for('home'))
+
+    user = get_user_by_email(session['email'])
+    user_id = user[0]
+
+    if request.method == 'POST':
+        course_name = request.form.get('course_name')
+        course_description = request.form.get('course_description', '')
+        if course_name:
+            insert_course(user_id, course_name, course_description)
+            return redirect(url_for('dashboard'))
+
+    return render_template('create_course.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -93,14 +175,10 @@ def register():
 
     return render_template('register.html')
 
-@app.route('/logout')
-def logout():
-    session.pop('email', None)
-    return redirect(url_for('home'))
-
 @app.route('/chat', methods=['POST'])
 def chat():
     user_message = request.json.get('message', '').lower()
+    print(f"[Chat] Received message: {user_message}")  # debug
 
     if 'hello' in user_message or 'hi' in user_message:
         reply = "welcome"
@@ -111,8 +189,12 @@ def chat():
     else:
         reply = "Sorry, I didn't understand that."
 
+    print(f"[Chat] Replying with: {reply}")  # debug
     return jsonify({'reply': reply})
 
+# ==========================
+# Run App
+# ==========================
 if __name__ == '__main__':
     app.run(debug=True)
 
