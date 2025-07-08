@@ -2,7 +2,7 @@ import os
 import base64
 import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from werkzeug.security import generate_password_hash, check_password_hash  # ✅ استيراد التشفير
+from werkzeug.security import generate_password_hash, check_password_hash  
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
@@ -45,7 +45,7 @@ def login():
     password = request.form['password']
 
     user = get_user_by_email(email)
-    if user and check_password_hash(user[3], password):  # ✅ التحقق من الباسورد
+    if user and check_password_hash(user[3], password):  
         session['email'] = email
         return redirect(url_for('dashboard'))
 
@@ -63,16 +63,16 @@ def register():
         fullname = request.form.get('fullname')
         email = request.form.get('email')
         password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')  # ✅ تأكيد الباسورد
+        confirm_password = request.form.get('confirm_password')  
         photo_data = request.form.get('photo_data')
 
         if get_user_by_email(email):
             return render_template('register.html', error="Email already exists.")
 
         if password != confirm_password:
-            return render_template('register.html', error="Passwords do not match.")  # ✅ تحقق من التطابق
+            return render_template('register.html', error="Passwords do not match.")  
 
-        hashed_password = generate_password_hash(password)  # ✅ تشفير كلمة السر
+        hashed_password = generate_password_hash(password) 
 
         photo_path = None
         if photo_data:
